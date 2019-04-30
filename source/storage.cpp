@@ -264,3 +264,21 @@ void rmdir(const char *path)
         error("Failed removing directory, error: %s (%d)\n", strerror(errno), -errno);
     }
 }
+
+
+long filesize(const char *path)
+{
+    long filesize=0;
+    FILE *f = fopen(path, "r");
+    if (!f)
+        error("Failed opening file, error: %s (%d)\n", strerror(errno), -errno);
+
+    fseek(f, 0, SEEK_END);
+    filesize = ftell(f);
+
+    int err = fclose(f);
+    if (err < 0)
+        error("Failed closing file, error: %s (%d)\n", strerror(errno), -errno);
+
+    return filesize;
+}

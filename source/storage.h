@@ -25,5 +25,6 @@ void ls(const char* directory);
 void cat(const char *path);
 void rm(const char *path);
 void rmdir(const char *path);
+long filesize(const char *path);
 
 #endif //STORAGE_H

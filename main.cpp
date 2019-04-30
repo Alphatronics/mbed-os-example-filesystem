@@ -21,116 +21,98 @@
 #include "benchmark.h"
 #include "storage.h"
 
+
+#include <iostream>
+#include <string>
+
 Benchmark benchmark;
 
-const char* MYFILE = "/" MOUNTPOINT "/numbers.txt";
-
-void setupFile(const char * path)
+#include<sstream>
+template <typename T>
+std::string to_string(T value)
 {
-    // Open the numbers file
-    bool hasFile = exists_file(path);
-    if(hasFile) 
-        return;
+    //create an output string stream
+    std::ostringstream os ;
 
-    // Create the numbers file if it doesn't exist
-    printf("No file found, creating a new file... ");
-    fflush(stdout);
+    //throw the value into the string stream
+    os << value ;
+
+    //convert the string stream into a string and return
+    return os.str() ;
+}
+
+void testFile(const char * path, char* buffer, uint32_t size)
+{
     FILE *f = fopen(path, "w+");
-    printf("%s\n", (!f ? "Fail :(" : "OK"));
     if (!f) {
-        error("error: %s (%d)\n", strerror(errno), -errno);
+        error("Failed opening file, error: %s (%d)\n", strerror(errno), -errno);
     }
 
-    int err=0;
-    for (int i = 0; i < 10; i++) {
-        printf("\rWriting numbers (%d/%d)... ", i, 10);
-        fflush(stdout);
-        err = fprintf(f, "    %d\n", i);
-        if (err < 0) {
-            printf("Fail :(\n");
-            error("error: %s (%d)\n", strerror(errno), -errno);
+    size_t modified = fwrite (buffer , sizeof(char), size, f);
+    if(modified != size)
+        error("Failed writing data, error: %s (%d)\n", strerror(errno), -errno);
+    
+    int err = fclose(f);
+    if (err < 0) {
+        error("Failed closing file, error: %s (%d)\n", strerror(errno), -errno);
+    }
+}
+
+
+void runAllTests()
+{
+    const uint8_t step = 32;
+    uint32_t datasize = 32;
+    const static char* MYFILE = "/" MOUNTPOINT "/rnd.bin";
+    const static char TESTDATA[step+1] = { "my32charlongtestdatastringdjizle" };
+
+    while(true) {
+        //setup file
+        rm(MYFILE);
+        touch(MYFILE);
+        //printf("Content of file \"%s\":\r\n ", MYFILE);
+        //cat(MYFILE);
+
+        //setup testbuffer with random data
+        char * buffer = new char[datasize+1];
+        buffer[datasize] = '\0';
+        
+        for(uint32_t i=0; i<datasize; i+=step) {
+            memcpy(buffer, TESTDATA + i, step);
         }
-    }
-    printf("\rWriting numbers (%d/%d)... OK\n", 10, 10);
 
-    printf("Seeking file... ");
-    fflush(stdout);
-    err = fseek(f, 0, SEEK_SET);
-    printf("%s\n", (err < 0 ? "Fail :(" : "OK"));
-    if (err < 0) {
-        error("error: %s (%d)\n", strerror(errno), -errno);
-    }
+        std::string name = std::string("Test: ") + to_string(datasize);
 
-    printf("\rClosing \"%s\"... ", path);
-    fflush(stdout);
-    err = fclose(f);
-    printf("%s\n", (err < 0 ? "Fail :(" : "OK"));
-    if (err < 0) {
-        error("error: %s (%d)\n", strerror(errno), -errno);
+        benchmark.start(name);
+        testFile(MYFILE, buffer, datasize);
+        benchmark.stop();
+
+        delete[] buffer;
+
+        //printf("Content of file \"%s\":\r\n ", MYFILE);
+        //cat(MYFILE);
+
+        datasize += step;
+        if(datasize>4096)
+            break;
     }
 }
 
 // Entry point for the example
 int main() {
     powerup();
-    printf("--- Mbed OS filesystem example ---\n");
+    printf("---------------------------------------------------\n");
+    printf("---------- Mbed OS filesystem benchmark -----------\n");
+    printf("---------------------------------------------------\n");
 
     selectDisk(DISKTYPE_SD);
 
     mount();
 
-    int err=0;
-
-    setupFile(MYFILE);
-
-    printf("Opening \"%s\"... ", MYFILE);
-    fflush(stdout);
-    FILE *f = fopen(MYFILE, "r+");
-    printf("%s\n", (!f ? "Fail :(" : "OK"));
-    if (!f) 
-        exit(-1);
-
-    // Go through and increment the numbers
-    for (int i = 0; i < 10; i++) {
-        printf("\rIncrementing numbers (%d/%d)... ", i, 10);
-        fflush(stdout);
-
-        // Get current stream position
-        long pos = ftell(f);
-
-        // Parse out the number and increment
-        int32_t number;
-        fscanf(f, "%ld", &number);
-        number += 1;
-
-        // Seek to beginning of number
-        fseek(f, pos, SEEK_SET);
-    
-        // Store number
-        fprintf(f, "    %ld\n", number);
-
-        // Flush between write and read on same file
-        fflush(f);
-    }
-    printf("\rIncrementing numbers (%d/%d)... OK\n", 10, 10);
-
-    // Close the file which also flushes any cached writes
-    printf("Closing \"%s\"... ", MYFILE);
-    fflush(stdout);
-    err = fclose(f);
-    printf("%s\n", (err < 0 ? "Fail :(" : "OK"));
-    if (err < 0) {
-        error("error: %s (%d)\n", strerror(errno), -errno);
-    }
-    
-    ls("/fs/");
-
-    // Display the numbers file
-    printf("Content of file \"%s\":\r\n ", MYFILE);
-    cat(MYFILE);
+    runAllTests();
 
     unmount();
         
-    printf("Mbed OS filesystem example done!\n");
+    printf("Mbed OS filesystem benchmark done!\n");
 }
 
