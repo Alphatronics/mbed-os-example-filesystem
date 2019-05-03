@@ -27,6 +27,9 @@
 
 Benchmark benchmark;
 
+#define STEPBUFFERSIZE   32
+#define MAXBUFFERSIZE   8192
+
 #include<sstream>
 template <typename T>
 std::string to_string(T value)
@@ -61,10 +64,9 @@ void testFile(const char * path, char* buffer, uint32_t size)
 
 void runAllTests()
 {
-    const uint8_t step = 32;
     uint32_t datasize = 32;
     const static char* MYFILE = "/" MOUNTPOINT "/rnd.bin";
-    const static char TESTDATA[step+1] = { "my32charlongtestdatastringdjizle" };
+    const static char TESTDATA[STEPBUFFERSIZE+1] = { "my32charlongtestdatastringdjizle" };
 
     while(true) {
         //setup file
@@ -77,8 +79,8 @@ void runAllTests()
         char * buffer = new char[datasize+1];
         buffer[datasize] = '\0';
         
-        for(uint32_t i=0; i<datasize; i+=step) {
-            memcpy(buffer, TESTDATA + i, step);
+        for(uint32_t i=0; i<datasize; i+=STEPBUFFERSIZE) {
+            memcpy(buffer, TESTDATA + i, STEPBUFFERSIZE);
         }
 
         std::string name = std::string("Test: ") + to_string(datasize);
@@ -92,8 +94,8 @@ void runAllTests()
         //printf("Content of file \"%s\":\r\n ", MYFILE);
         //cat(MYFILE);
 
-        datasize += step;
-        if(datasize>4096)
+        datasize += STEPBUFFERSIZE;
+        if(datasize>MAXBUFFERSIZE)
             break;
     }
 }

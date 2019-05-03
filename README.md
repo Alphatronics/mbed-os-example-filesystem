@@ -6,15 +6,17 @@ You can find more information about the Mbed OS file system and other related pi
 
 **Table of contents:**
 
-1. [Hardware requirements](#hardware-requirements)
-1. [Usage](#usage)
-   - [Import the example](#import-the-example)
-   - [Compile the example](#compile-the-example)
-   - [Run the example](#run-the-example)
-   - [Troubleshooting](#troubleshooting)
-1. [Changing the file system](#changing-the-file-system)
-1. [Changing the block device](#changing-the-block-device)
-1. [Tested configurations](#tested-configurations)
+- [Getting started with the Mbed OS file system](#getting-started-with-the-mbed-os-file-system)
+  - [Hardware requirements](#hardware-requirements)
+  - [Usage](#usage)
+      - [Import the example](#import-the-example)
+      - [Compile the example](#compile-the-example)
+      - [Run the example](#run-the-example)
+      - [Troubleshooting](#troubleshooting)
+  - [Testresults](#testresults)
+  - [Changing the file system](#changing-the-file-system)
+  - [Changing the block device](#changing-the-block-device)
+  - [Tested configurations](#tested-configurations)
 
 ## Hardware requirements
 
@@ -93,68 +95,30 @@ Image: ./BUILD/K64F/ARM/mbed-os-example-filesystem.bin
 Expected output:
 
 ```
---- Mbed OS filesystem example ---
-Mounting the filesystem... Fail :(
-No filesystem found, formatting... OK
-Opening "/fs/numbers.txt"... Fail :(
-No file found, creating a new file... OK
-Writing numbers (10/10)... OK
-Seeking file... OK
-Incrementing numbers (10/10)... OK
-Closing "/fs/numbers.txt"... OK
-Opening the root directory... OK
-root directory:
-    .
-    ..
-    numbers.txt
-Closing the root directory... OK
-Opening "/fs/numbers.txt"...OK
-numbers:
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-Closing "/fs/numbers.txt"... OK
-Unmounting... OK
-Mbed OS filesystem example done!
-```
-
-You can also reset the board to see the data persist across boots. Each boot
-increments the numbers stored on disk:
-
-```
---- Mbed OS filesystem example ---
+Initializing board
+Board ready
+---------------------------------------------------
+---------- Mbed OS filesystem benchmark -----------
+---------------------------------------------------
+Selected Disk: SDCARD
+Init BlockDevice SDCARD
+dataflash size: 7826571264 bytes
+dataflash read size: 512 bytes
+dataflash program size: 512 bytes
+dataflash erase size: 512 bytes
 Mounting the filesystem... OK
-Opening "/fs/numbers.txt"... OK
-Incrementing numbers (10/10)... OK
-Closing "/fs/numbers.txt"... OK
-Opening the root directory... OK
-root directory:
-    .
-    ..
-    numbers.txt
-Closing the root directory... OK
-Opening "/fs/numbers.txt"...OK
-numbers:
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-Closing "/fs/numbers.txt"... OK
+BENCHMARK Test: 32 DONE!!! The time taken was 0s 63ms
+BENCHMARK Test: 64 DONE!!! The time taken was 0s 63ms
+BENCHMARK Test: 96 DONE!!! The time taken was 0s 63ms
+BENCHMARK Test: 128 DONE!!! The time taken was 0s 63ms
+BENCHMARK Test: 160 DONE!!! The time taken was 0s 63ms
+BENCHMARK Test: 192 DONE!!! The time taken was 0s 63ms
+...
+BENCHMARK Test: 8160 DONE!!! The time taken was 0s 189ms
+BENCHMARK Test: 8192 DONE!!! The time taken was 0s 166ms
 Unmounting... OK
-Mbed OS filesystem example done!
+Mbed OS filesystem benchmark done!
+
 ```
 
 If you find yourself with a corrupted file system, you can reset the storage
@@ -173,6 +137,12 @@ a file system that is not power resilient!
 
 If you have problems, you can review the [documentation](https://os.mbed.com/docs/latest/tutorials/debugging.html)
 for suggestions on what could be wrong and how to fix it.
+
+## Testresults
+
+Using FATFS: 
+
+![Results chart](testresults.png)
 
 ## Changing the file system
 
